@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  fusionpbx:
+    build:
+      context: ${PWD}/
+      args:
+        EXTERNAL_RTP_IP: 42.116.254.242
+    image: fgst/freeswitch:mvp
+    ports:
+      - "5060:5060/tcp"
+      - "5060:5060/udp"
+      - "5080:5080/tcp"
+      - "5080:5080/udp"
+      - "8080:80"
+      - "8443:443"
+      - "16384-16390:16384-16390/udp"
+    networks:
+      main:
+        aliases: 
+          - fusion
+    volumes:
+      - fusionpbx_config:/etc/fusionpbx
+      - freswitch_config:/etc/freeswitch
+    depends_on:
+      - db
+    group_add:
+      - 20 # dialout
+  db:
+      image: postgres:alpine
+      environment:
+        POSTGRES_USER: 'fusionpbx'
+        POSTGRES_DB: 'fusionpbx'
+        POSTGRES_PASSWORD: 'doAvJVVEqkZTXdHYJ7wpCPNLqS7Db7RR'
+      volumes:
+        - fusionpbx_db:/var/lib/postgresql/data
+        - ./postgres:/docker-entrypoint-initdb.d
+      networks:
+        main:
+          aliases:
+            - db
+networks:
+  main:
+
+volumes: 
+  fusionpbx_db:
+  fusionpbx_config:
+  freswitch_config:
